@@ -1,7 +1,9 @@
 class BankAccount {
-  constructor(accountId, accountHolderName) {
+  constructor(accountId, accountHolderName, mobileNumber, aadharNumber) {
     this.accountId = accountId;
     this.accountHolderName = accountHolderName;
+    this.mobileNumber = mobileNumber;
+    this.aadharNumber = aadharNumber;
     this.balance = 0;
   }
 
@@ -34,10 +36,12 @@ class Bank {
     this.accountCounter = 1;
   }
 
-  createAccount(name) {
-    const newAccount = new BankAccount(this.accountCounter, name);
+  createAccount(name, mobileNumber, aadharNumber) {
+    const newAccount = new BankAccount(this.accountCounter, name, mobileNumber, aadharNumber);
     this.accounts[this.accountCounter] = newAccount;
-    return `Account created successfully. Account ID: ${this.accountCounter++}`;
+    const createdAccountId = this.accountCounter;
+    this.accountCounter++;
+    return { successMessage: "Account created successfully.", accountId: createdAccountId };
   }
 
   deposit(accountId, amount) {
@@ -68,17 +72,19 @@ const renderForm = () => {
 
   if (selectedOption === "createAccount") {
     formContainer.innerHTML = `
-            <label>Enter Account Holder Name: <input type="text" id="accountHolderName" /></label>
-        `;
+      <label>Enter Account Holder Name: <input type="text" id="accountHolderName" required /></label>
+      <label>Enter Mobile Number: <input type="text" id="mobileNumber" required /></label>
+      <label>Enter Aadhar Number: <input type="text" id="aadharNumber" required /></label>
+    `;
   } else if (["depositMoney", "withdrawMoney"].includes(selectedOption)) {
     formContainer.innerHTML = `
-            <label>Enter Account ID: <input type="number" id="accountId" /></label>
-            <label>Enter Amount: <input type="number" id="amount" /></label>
-        `;
+      <label>Enter Account ID: <input type="number" id="accountId" required /></label>
+      <label>Enter Amount: <input type="number" id="amount" required /></label>
+    `;
   } else if (selectedOption === "checkBalance") {
     formContainer.innerHTML = `
-            <label>Enter Account ID: <input type="number" id="accountId" /></label>
-        `;
+      <label>Enter Account ID: <input type="number" id="accountId" required /></label>
+    `;
   }
 };
 
@@ -88,10 +94,14 @@ const executeAction = () => {
 
   if (selectedOption === "createAccount") {
     const name = document.getElementById("accountHolderName").value.trim();
-    if (name) {
-      result = bank.createAccount(name);
+    const mobileNumber = document.getElementById("mobileNumber").value.trim();
+    const aadharNumber = document.getElementById("aadharNumber").value.trim();
+
+    if (name && mobileNumber && aadharNumber) {
+      const accountData = bank.createAccount(name, mobileNumber, aadharNumber);
+      result = `${accountData.successMessage} Account ID: ${accountData.accountId}`;
     } else {
-      result = "Please enter a valid name.";
+      result = "Please enter all the details.";
     }
   } else if (["depositMoney", "withdrawMoney"].includes(selectedOption)) {
     const accountId = parseInt(document.getElementById("accountId").value);
@@ -121,5 +131,4 @@ const executeAction = () => {
 options.addEventListener("change", renderForm);
 executeButton.addEventListener("click", executeAction);
 
-// Initialize the form
 renderForm();
